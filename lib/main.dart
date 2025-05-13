@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'src/home_page.dart';
+import 'package:projeto_mvp/src/welcome_screen.dart';
 
 void main() => runApp(MyApp());
 
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: HomePage(), // ✅ Aqui está a alteração principal
+      home: WelcomeScreen(), // ✅ Aqui está a alteração principal
       debugShowCheckedModeBanner: false,
     );
   }
