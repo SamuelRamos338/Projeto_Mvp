@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
     ],
     "Lugares modernos 🍸": [
       {'titulo': 'Le Café', 'descricao': 'Café moderno com ambiente acolhedor.', 'imagem': 'assets/lecafe.jpeg'},
-      {'titulo': 'La Tavola Trattoria', 'descricao': 'Ambiente italiano romântico com luz de velas.', 'imagem': 'assets/latavola.jpeg'},
+      {'titulo': 'La Tavola Trattoria', 'descricao': 'Ambiente italiano romântico com luz de velas.', 'imagem': 'assets/latavoa.jpeg'},
     ],
     "Passeios culturais 🏛️": [
       {'titulo': 'Teatro Tobias Barreto', 'descricao': 'Apresentações musicais, teatrais e dança.', 'imagem': 'assets/teatro.jpeg'},
