@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:projeto_mvp/src/home_page.dart';
 
 class WelcomeScreen extends StatelessWidget {
+  // Declara a função toggleTheme como um campo final
+  final void Function(bool) toggleTheme;
+
+  // Adiciona o parâmetro toggleTheme ao construtor
+  const WelcomeScreen({Key? key, required this.toggleTheme}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Tela com fundo em degradê bege
+      // Tela com fundo em degradê bege (cores fixas para a tela de boas-vindas)
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -31,14 +37,16 @@ class WelcomeScreen extends StatelessWidget {
                 // Botão "Entrar"
                 ElevatedButton(
                   onPressed: () {
-                    // Vai pra HomePage
+                    // Navega para a HomePage, passando a função toggleTheme que WelcomeScreen recebeu
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(toggleTheme: toggleTheme), // Passa a função
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF8E2321), // Cor vinho
+                    backgroundColor: Color(0xFF8E2321), // Cor vinho (fixa para o botão de entrada)
                     foregroundColor: Colors.white, // Texto branco
                     padding: EdgeInsets.symmetric(horizontal: 120, vertical: 15),
                     shape: RoundedRectangleBorder(
