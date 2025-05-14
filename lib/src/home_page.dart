@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-// Importa as páginas do menu e DetalhesPage
 import 'mais_populares.dart';
 import 'sobreapp_page.dart';
 import 'sugestoes_para_casal.dart';
 import 'suporte.dart';
 import 'configuracoes_page.dart';
 import 'detalhes_page.dart';
-// Importa as cores personalizadas do mesmo diretório (ajuste o caminho se necessário)
-import 'custom_colors.dart';
+import 'themes/custom_colors.dart';
 
+/// A HomePage exibe carrosséis de lugares românticos usando um tema centralizado.
 class HomePage extends StatefulWidget {
-  // Declara a função toggleTheme como um campo final
+  // toggleTheme é passado para alterar o tema global do app (claro/escuro).
   final void Function(bool) toggleTheme;
-
-  // Adiciona o parâmetro toggleTheme ao construtor
   const HomePage({Key? key, required this.toggleTheme}) : super(key: key);
 
   @override
@@ -23,7 +20,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Dados das categorias e locais
+  /// Dados das categorias carregados localmente para performance offline.
   final Map<String, List<Map<String, String>>> categorias = {
     "Ao ar livre ☀️": [
       {
@@ -110,182 +107,144 @@ class _HomePageState extends State<HomePage> {
       },
     ],
   };
+  // PageControllers com viewportFraction reduzido para mostrar previews dos proximos itens.
+  late final PageController _pageController1 = PageController(viewportFraction: 0.9);
+  late final PageController _pageController2 = PageController(viewportFraction: 0.9);
+  late final PageController _pageController3 = PageController(viewportFraction: 0.9);
 
-  // Controladores para os PageViews
-  late PageController _pageController1;
-  late PageController _pageController2;
-  late PageController _pageController3;
-
-  // Índices das páginas atuais para auto-scroll
-  int _currentPage1 = 0;
-  int _currentPage2 = 0;
-  int _currentPage3 = 0;
-
-  // Timers para o auto-scroll
-  List<Timer> _timers = [];
+  // Índices atuais para sincronizar auto-scroll sem estado externo.
+  int _currentPage1 = 0, _currentPage2 = 0, _currentPage3 = 0;
+  final List<Timer> _timers = [];
 
   @override
   void initState() {
     super.initState();
-    // Inicializa os PageControllers
-    _pageController1 = PageController(viewportFraction: 0.9);
-    _pageController2 = PageController(viewportFraction: 0.9);
-    _pageController3 = PageController(viewportFraction: 0.9);
+    // Configura auto-scroll com delays diferentes para não sincronizar todos ao mesmo tempo.
+    _timers.addAll([
+      Timer.periodic(const Duration(seconds: 13), (_) => _autoScroll(_pageController1, categorias["Ao ar livre ☀️"]!, (i) => _currentPage1 = i, _currentPage1)),
+      Timer.periodic(const Duration(seconds: 17), (_) => _autoScroll(_pageController2, categorias["Lugares modernos 🍸"]!, (i) => _currentPage2 = i, _currentPage2)),
+      Timer.periodic(const Duration(seconds: 25), (_) => _autoScroll(_pageController3, categorias["Passeios culturais 🏛️"]!, (i) => _currentPage3 = i, _currentPage3)),
+    ]);
+  }
 
-    // Configura timers para auto-scroll dos carrosséis
-    _timers.add(Timer.periodic(Duration(seconds: 15), (timer) {
-      if (_pageController1.hasClients) { // Verifica se o controlador está anexado
-        _currentPage1 = (_currentPage1 + 1) % categorias['Ao ar livre ☀️']!.length;
-        _pageController1.animateToPage(_currentPage1, duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
-      }
-    }));
-    _timers.add(Timer.periodic(Duration(seconds: 20), (timer) {
-      if (_pageController2.hasClients) { // Verifica se o controlador está anexado
-        _currentPage2 = (_currentPage2 + 1) % categorias['Lugares modernos 🍸']!.length;
-        _pageController2.animateToPage(_currentPage2, duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
-      }
-    }));
-    _timers.add(Timer.periodic(Duration(seconds: 30), (timer) {
-      if (_pageController3.hasClients) { // Verifica se o controlador está anexado
-        _currentPage3 = (_currentPage3 + 1) % categorias['Passeios culturais 🏛️']!.length;
-        _pageController3.animateToPage(_currentPage3, duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
-      }
-    }));
+  // Método para animar o próximo item e atualizar índice.
+  void _autoScroll(PageController controller, List<Map<String, String>> list, void Function(int) setIndex, int currentIndex) {
+    if (!controller.hasClients) return; // Evita exceções se controlador não estiver pronto
+    final next = (currentIndex + 1) % list.length;
+    setIndex(next);
+    controller.animateToPage(
+      next,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   void dispose() {
-    // Libera os PageControllers
+    // Dispose de controladores e timers.
     _pageController1.dispose();
     _pageController2.dispose();
     _pageController3.dispose();
-    // Cancela todos os timers para evitar vazamentos de memória
-    for (var timer in _timers) {
-      timer.cancel();
-    }
+    for (var t in _timers) t.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Acessa o tema atual e a extensão de cores personalizadas
-    final theme = Theme.of(context);
-    final customColors = theme.extension<CustomColors>()!;
+    // Obtenção centralizada do tema atual e das cores personalizadas.
+    final theme         = Theme.of(context);
+    final customColors  = theme.extension<CustomColors>()!;
 
-    // Cores do tema padrão (AppBar, Fundo do Scaffold, Cor do Card)
-    final Color appBarColor = theme.appBarTheme.backgroundColor!;
-    final Color appBarTitleColor = theme.appBarTheme.foregroundColor!;
-    final Color appBarIconColor = theme.appBarTheme.iconTheme!.color!;
-    final Color scaffoldBackgroundColor = theme.scaffoldBackgroundColor; // Fundo da tela muda com o tema
-    final Color cardColor = theme.cardColor; // Cor do Card (definida como clara no main.dart)
-
-    // Cores personalizadas da extensão (para texto)
-    final Color messageTextColor = customColors.centerTextColor!; // Cor para o texto da mensagem inicial
-    // Usando as cores definidas na extensão para texto dentro dos cards claros
-    final Color itemTitleColor = customColors.cardTitleColor!;
-    final Color itemDescriptionColor = customColors.cardSubtitleColor!;
-    final Color categoryTitleColor = customColors.titleColor!; // Cor para os títulos das categorias
+    // Extrai cores fixas do AppBar definidas em main.dart para consistência:
+    final appBarColor      = theme.appBarTheme.backgroundColor!;
+    final appBarTitleColor = theme.appBarTheme.foregroundColor!;
+    final appBarIconColor  = theme.appBarTheme.iconTheme!.color!;
 
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor, // Usa a cor de fundo do tema
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('This is Love', style: TextStyle(color: appBarTitleColor)), // Usa cor do tema
+        backgroundColor: appBarColor,
+        foregroundColor: appBarTitleColor,
+        iconTheme: IconThemeData(color: appBarIconColor),
         centerTitle: true,
-        backgroundColor: appBarColor, // Usa cor do tema
-        iconTheme: IconThemeData(color: appBarIconColor), // Usa cor do tema
+        title: const Text('This is Love'),
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: appBarColor), // Usa cor do tema
+              decoration: BoxDecoration(color: appBarColor),
               child: Row(
                 children: [
-                  Icon(Icons.menu, color: appBarIconColor, size: 20), // Usa cor do tema
-                  SizedBox(width: 8),
-                  Text('Menu', style: TextStyle(color: appBarTitleColor, fontSize: 18)), // Usa cor do tema
+                  Icon(Icons.menu, color: appBarIconColor),
+                  const SizedBox(width: 8),
+                  Text('Menu', style: TextStyle(color: appBarTitleColor, fontSize: 18)),
                 ],
               ),
             ),
-            ListTile(
-              leading: Icon(Icons.star, color: customColors.iconColor), // Exemplo de uso de cor da extensão
-              title: Text('Mais Populares', style: TextStyle(color: customColors.subtitleColor)), // Exemplo de uso de cor da extensão
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MaisPopularesPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.info_outline, color: customColors.iconColor), // Exemplo de uso de cor da extensão
-              title: Text('Sobre o App', style: TextStyle(color: customColors.subtitleColor)), // Exemplo de uso de cor da extensão
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SobreAppPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.lightbulb, color: customColors.iconColor), // Exemplo de uso de cor da extensão
-              title: Text('Sugestões para o casal', style: TextStyle(color: customColors.subtitleColor)), // Exemplo de uso de cor da extensão
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SugestoesParaCasalPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.support_agent, color: customColors.iconColor), // Exemplo de uso de cor da extensão
-              title: Text('Suporte', style: TextStyle(color: customColors.subtitleColor)), // Exemplo de uso de cor da extensão
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SuportePage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings, color: customColors.iconColor), // Exemplo de uso de cor da extensão
-              title: Text('Configurações', style: TextStyle(color: customColors.subtitleColor)), // Exemplo de uso de cor da extensão
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  // Passa a função toggleTheme que HomePage recebeu
-                  MaterialPageRoute(builder: (context) => ConfiguracoesPage(toggleTheme: widget.toggleTheme)),
-                );
-              },
-            ),
+            // Uso de método auxiliar para reduzir repetição e manter coesão:
+            _buildDrawerTile(Icons.star, 'Mais Populares', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => MaisPopularesPage()));
+            }, customColors),
+            _buildDrawerTile(Icons.info_outline, 'Sobre o App', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => SobreAppPage()));
+            }, customColors),
+            _buildDrawerTile(Icons.lightbulb, 'Sugestões para o casal', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => SugestoesParaCasalPage()));
+            }, customColors),
+            _buildDrawerTile(Icons.support_agent, 'Suporte', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => SuportePage()));
+            }, customColors),
+            _buildDrawerTile(Icons.settings, 'Configurações', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => ConfiguracoesPage(toggleTheme: widget.toggleTheme)));
+            }, customColors),
           ],
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Mensagem central enfatiza propósito do app
           Text(
             'Menos tela, mais conexão! Saia e aproveite o dia com quem você ama. ❤️',
-            style: TextStyle(fontSize: 16, color: messageTextColor), // Usa cor da extensão
+            style: TextStyle(fontSize: 16, color: customColors.centerTextColor),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 20),
-          // Constrói os carrosséis usando o tema
-          buildCarousel('Ao ar livre ☀️', categorias['Ao ar livre ☀️']!, _pageController1, cardColor, itemTitleColor, itemDescriptionColor, categoryTitleColor),
-          buildCarousel('Lugares modernos 🍸', categorias['Lugares modernos 🍸']!, _pageController2, cardColor, itemTitleColor, itemDescriptionColor, categoryTitleColor),
-          buildCarousel('Passeios culturais 🏛️', categorias['Passeios culturais 🏛️']!, _pageController3, cardColor, itemTitleColor, itemDescriptionColor, categoryTitleColor),
+          const SizedBox(height: 20),
+          // Três carrosséis com mesmas regras de estilo:
+          buildCarousel(
+            'Ao ar livre ☀️', categorias['Ao ar livre ☀️']!, _pageController1,
+            theme.cardColor, customColors.cardTitleColor!, customColors.cardSubtitleColor!, customColors.titleColor!,
+          ),
+          buildCarousel(
+            'Lugares modernos 🍸', categorias['Lugares modernos 🍸']!, _pageController2,
+            theme.cardColor, customColors.cardTitleColor!, customColors.cardSubtitleColor!, customColors.titleColor!,
+          ),
+          buildCarousel(
+            'Passeios culturais 🏛️', categorias['Passeios culturais 🏛️']!, _pageController3,
+            theme.cardColor, customColors.cardTitleColor!, customColors.cardSubtitleColor!, customColors.titleColor!,
+          ),
         ],
       ),
     );
   }
 
-  // Método auxiliar para construir os carrosséis
+  /// Constrói itens do drawer usando cores de CustomColors.
+  Widget _buildDrawerTile(IconData icon, String title, VoidCallback onTap, CustomColors colors) {
+    return ListTile(
+      leading: Icon(icon, color: colors.iconColor),
+      title: Text(title, style: TextStyle(color: colors.subtitleColor)),
+      onTap: onTap,
+    );
+  }
+
+  /// Carrossel reutilizável que usa estilos centralizados para consistência.
   Widget buildCarousel(
       String title,
       List<Map<String, String>> items,
@@ -300,13 +259,9 @@ class _HomePageState extends State<HomePage> {
       children: [
         Text(
           title,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: categoryTitleColor, // Usa cor da extensão para o título da categoria
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: categoryTitleColor),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         SizedBox(
           height: 260,
           child: PageView.builder(
@@ -315,47 +270,42 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, index) {
               final place = items[index];
               return InkWell(
+                borderRadius: BorderRadius.circular(16),
                 onTap: () {
-                  // Navega para a página de detalhes ao clicar no card
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DetalhesPage(
-                        titulo: place['titulo'] ?? '',
-                        imagem: place['imagem'] ?? '',
-                        descricao: place['descricao'] ?? '',
-                        detalhes: place['detalhes'] ?? place['descricao'] ?? '',
+                      builder: (_) => DetalhesPage(
+                        titulo: place['titulo']!,
+                        descricao: place['descricao']!,
+                        imagem: place['imagem']!,
+                        detalhes: place['detalhes']!,
                       ),
                     ),
                   );
                 },
-                borderRadius: BorderRadius.circular(16),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Card(
-                    color: cardColor, // Usa a cor do card do tema (definida como clara)
+                    color: cardColor,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     elevation: 5,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Imagem do local
                         ClipRRect(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                           child: Image.asset(
                             place['imagem']!,
                             height: 140,
                             width: double.infinity,
                             fit: BoxFit.cover,
-                            // Adicione tratamento de erro para a imagem se necessário
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 140,
-                                color: Colors.grey[300],
-                                child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
-                                alignment: Alignment.center,
-                              );
-                            },
+                            errorBuilder: (_, __, ___) => Container(
+                              height: 140,
+                              color: Colors.grey[300],
+                              alignment: Alignment.center,
+                              child: const Icon(Icons.image_not_supported),
+                            ),
                           ),
                         ),
                         Padding(
@@ -365,19 +315,12 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Text(
                                 place['titulo']!,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: itemTitleColor, // Usa cor da extensão (para texto escuro no card claro)
-                                ),
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: itemTitleColor),
                               ),
-                              SizedBox(height: 6),
+                              const SizedBox(height: 6),
                               Text(
                                 place['descricao']!,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: itemDescriptionColor, // Usa cor da extensão (para texto escuro no card claro)
-                                ),
+                                style: TextStyle(fontSize: 14, color: itemDescriptionColor),
                               ),
                             ],
                           ),
@@ -390,7 +333,7 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ),
-        SizedBox(height: 24),
+        const SizedBox(height: 24),
       ],
     );
   }

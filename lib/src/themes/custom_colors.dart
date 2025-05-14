@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-// Define uma extensão de tema para suas cores personalizadas
-// Isso permite adicionar propriedades de cor ao ThemeData do Flutter
+/// Extensão de tema para armazenar paletas personalizadas.
+/// Isso permite aplicar essas cores de forma consistente via Theme.of(context).extension<CustomColors>().
 class CustomColors extends ThemeExtension<CustomColors> {
-  // Construtor constante para a classe CustomColors
   const CustomColors({
     required this.titleColor,
     required this.subtitleColor,
@@ -14,8 +13,6 @@ class CustomColors extends ThemeExtension<CustomColors> {
     required this.centerTextColor,
   });
 
-  // Declare suas cores personalizadas como campos finais e anuláveis
-  // O tipo Color? indica que a cor pode ser nula, embora a usaremos como obrigatória no construtor
   final Color? titleColor;
   final Color? subtitleColor;
   final Color? emailLinkColor;
@@ -24,8 +21,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
   final Color? cardSubtitleColor;
   final Color? centerTextColor;
 
-  // Implementa o método copyWith para criar uma cópia da extensão com valores alterados
-  // Essencial para o funcionamento do tema do Flutter
+  /// Cria uma cópia com valores atualizados, necessário para temas dinâmicos.
   @override
   CustomColors copyWith({
     Color? titleColor,
@@ -37,7 +33,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
     Color? centerTextColor,
   }) {
     return CustomColors(
-      titleColor: titleColor ?? this.titleColor, // Se o novo valor for nulo, mantém o valor atual
+      titleColor: titleColor ?? this.titleColor,
       subtitleColor: subtitleColor ?? this.subtitleColor,
       emailLinkColor: emailLinkColor ?? this.emailLinkColor,
       iconColor: iconColor ?? this.iconColor,
@@ -47,16 +43,12 @@ class CustomColors extends ThemeExtension<CustomColors> {
     );
   }
 
-  // Implementa o método lerp (linear interpolation) para interpolação de cores
-  // Usado pelo Flutter para animar transições entre temas (por exemplo, claro para escuro)
+  /// Responsável por animar transições entre temas
   @override
   CustomColors lerp(ThemeExtension<CustomColors>? other, double t) {
-    // Verifica se o outro objeto é do mesmo tipo
-    if (other is! CustomColors) {
-      return this; // Se não for, retorna a instância atual
-    }
+    if (other is! CustomColors) return this;
+
     return CustomColors(
-      // Interpola cada cor individualmente
       titleColor: Color.lerp(titleColor, other.titleColor, t),
       subtitleColor: Color.lerp(subtitleColor, other.subtitleColor, t),
       emailLinkColor: Color.lerp(emailLinkColor, other.emailLinkColor, t),
@@ -66,4 +58,26 @@ class CustomColors extends ThemeExtension<CustomColors> {
       centerTextColor: Color.lerp(centerTextColor, other.centerTextColor, t),
     );
   }
+
+  /// Paleta padrão para tema claro
+  static const CustomColors light = CustomColors(
+    titleColor: Colors.brown,
+    subtitleColor: Color(0xFF6B3916),
+    emailLinkColor: Colors.blueAccent,
+    iconColor: Color(0xFF8E2321),
+    cardTitleColor: Colors.black87,
+    cardSubtitleColor: Colors.black54,
+    centerTextColor: Colors.brown,
+  );
+
+  /// Paleta padrão para tema escuro
+  static const CustomColors dark = CustomColors(
+    titleColor: Colors.white,
+    subtitleColor: Colors.white,
+    emailLinkColor: Colors.blueAccent,
+    iconColor: Colors.red,
+    cardTitleColor: Colors.white,
+    cardSubtitleColor: Colors.white54,
+    centerTextColor: Colors.white,
+  );
 }

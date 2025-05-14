@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 // Importa as cores personalizadas do mesmo diretório
-import 'custom_colors.dart';
+import 'themes/custom_colors.dart';
 
 class DetalhesPage extends StatelessWidget {
   // Parâmetros que a página de detalhes recebe
   final String titulo;
   final String imagem;
-  final String descricao; // Breve descrição (pode não ser usada nesta página se 'detalhes' for o principal)
-  final String detalhes; // Descrição completa
+  final String descricao;
+  final String detalhes;
 
   const DetalhesPage({
     Key? key,
@@ -21,50 +21,45 @@ class DetalhesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Acessa o tema atual e a extensão de cores personalizadas
     final theme = Theme.of(context);
-    // Certifica que a extensão CustomColors foi adicionada ao ThemeData no seu main.dart
     final customColors = theme.extension<CustomColors>()!;
 
-    // Cores do tema padrão (AppBar, Fundo do Scaffold)
-    final Color appBarColor = theme.appBarTheme.backgroundColor!;
-    final Color appBarTitleColor = theme.appBarTheme.foregroundColor!;
-    final Color appBarIconColor = theme.appBarTheme.iconTheme!.color!;
-    final Color scaffoldBackgroundColor = theme.scaffoldBackgroundColor; // Fundo da tela muda com o tema
+    // Cor do fundo da tela, título e ícones do AppBar
+    final appBarColor = theme.appBarTheme.backgroundColor!;
+    final appBarTitleColor = theme.appBarTheme.foregroundColor!;
+    final appBarIconColor = theme.appBarTheme.iconTheme!.color!;
+    final scaffoldBackgroundColor = theme.scaffoldBackgroundColor;
 
-    // Cores personalizadas da extensão (para texto)
-    final Color detailTitleColor = customColors.titleColor!; // Cor para o título principal
-    final Color detailTextColor = customColors.centerTextColor!; // Cor para o texto dos detalhes
+    // Cores personalizadas da extensão
+    final detailTitleColor = customColors.titleColor!;
+    final detailTextColor = customColors.centerTextColor!;
 
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor, // Usa a cor de fundo do tema
+      backgroundColor: scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          titulo, // O título do local no AppBar
+          titulo,
           style: TextStyle(
-            color: appBarTitleColor, // Cor do título do AppBar do tema
+            color: appBarTitleColor,
             fontWeight: FontWeight.w600,
             fontSize: 22,
           ),
-          // Adiciona um overflow para evitar que o título fique muito longo no AppBar
           overflow: TextOverflow.ellipsis,
         ),
-        backgroundColor: appBarColor, // Cor do AppBar do tema
-        iconTheme: IconThemeData(color: appBarIconColor), // Cor do ícone do AppBar do tema
-        elevation: theme.appBarTheme.elevation ?? 4, // Usa elevação do tema ou padrão
+        backgroundColor: appBarColor,
+        iconTheme: IconThemeData(color: appBarIconColor),
+        elevation: theme.appBarTheme.elevation ?? 4,
       ),
-      body: SingleChildScrollView( // Permite rolar se o conteúdo for muito longo
+      body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Imagem do local
             ClipRRect(
-              // Pode ajustar o borderRadius se quiser
-              // borderRadius: BorderRadius.circular(8.0),
               child: Image.asset(
                 imagem,
-                width: double.infinity, // Ocupa a largura total disponível
-                height: 250, // Altura fixa para a imagem
-                fit: BoxFit.cover, // Cobre a área sem distorcer
-                // Adicione tratamento de erro para a imagem se necessário
+                width: double.infinity,
+                height: 250,
+                fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     height: 250,
@@ -80,13 +75,13 @@ class DetalhesPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título do local (repetido no body para destaque)
+                  // Título do local
                   Text(
                     titulo,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: detailTitleColor, // Usa cor da extensão
+                      color: detailTitleColor,
                     ),
                   ),
                   SizedBox(height: 16),
@@ -95,11 +90,10 @@ class DetalhesPage extends StatelessWidget {
                     detalhes,
                     style: TextStyle(
                       fontSize: 16,
-                      color: detailTextColor, // Usa cor da extensão
-                      height: 1.5, // Espaçamento entre linhas
+                      color: detailTextColor,
+                      height: 1.5,
                     ),
                   ),
-                  // ... adicione mais informações ou widgets aqui
                 ],
               ),
             ),
